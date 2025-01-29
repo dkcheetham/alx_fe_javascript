@@ -43,6 +43,9 @@ window.onload = () => {
     populateCategories();
     restoreFilter();
     syncQuotes();
+
+    // Periodically check for new quotes every 60 seconds
+    setInterval(syncQuotes, 60000);
 };
 
 async function fetchQuotesFromServer() {
