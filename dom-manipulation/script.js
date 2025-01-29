@@ -30,6 +30,7 @@ function addQuote() {
         document.getElementById("newQuoteCategory").value = "";
 
         showRandomQuote();
+        showNotification("New quote added and synced with server!");
     } else {
         alert("Please enter both quote text and category.");
     }
@@ -65,9 +66,11 @@ async function fetchQuotesFromServer() {
             saveQuotes();
             showRandomQuote();
             populateCategories();
+            showNotification("Quotes synced with server!");
         }
     } catch (error) {
         console.error('Error fetching data:', error);
+        showNotification("Failed to sync quotes with server.", "error");
     }
 }
 
@@ -88,18 +91,21 @@ async function postQuoteToServer(quote) {
         if (response.ok) {
             const result = await response.json();
             console.log('Successfully posted quote:', result);
+            showNotification("Quote successfully posted to server!");
         } else {
             console.error('Error posting quote:', response.statusText);
+            showNotification("Error posting quote to server.", "error");
         }
     } catch (error) {
         console.error('Error posting data to server:', error);
+        showNotification("Network error while posting quote.", "error");
     }
 }
 
-// New syncQuotes function
 async function syncQuotes() {
     await fetchQuotesFromServer();
     console.log("Quotes synchronized with the server.");
+    showNotification("Quotes synced with server!");
 }
 
 function createAddQuoteForm() {
@@ -137,6 +143,28 @@ function createAddQuoteForm() {
     formContainer.appendChild(addButton);
 
     document.body.appendChild(formContainer);
+}
+
+// Notification UI for updates
+function showNotification(message, type = "success") {
+    const notification = document.createElement("div");
+    notification.textContent = message;
+    notification.style.position = "fixed";
+    notification.style.bottom = "20px";
+    notification.style.left = "50%";
+    notification.style.transform = "translateX(-50%)";
+    notification.style.padding = "10px 20px";
+    notification.style.color = "#fff";
+    notification.style.backgroundColor = type === "error" ? "red" : "green";
+    notification.style.borderRadius = "5px";
+    notification.style.boxShadow = "0px 0px 10px rgba(0,0,0,0.1)";
+    notification.style.zIndex = "1000";
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 function populateCategories() {
