@@ -22,7 +22,7 @@ function addQuote() {
         quotes.push({ text: newQuoteText, category: newQuoteCategory });
 
         saveQuotes();
-        populateCategories(); // Re-populate categories after adding a new one
+        populateCategories(); 
 
         document.getElementById("newQuoteText").value = "";
         document.getElementById("newQuoteCategory").value = "";
@@ -44,6 +44,7 @@ window.onload = () => {
 
 function createAddQuoteForm() {
     const formContainer = document.createElement("div");
+    formContainer.style.marginTop = "20px";
 
     const quoteInput = document.createElement("input");
     quoteInput.id = "newQuoteText";
@@ -72,12 +73,10 @@ function createAddQuoteForm() {
     document.body.appendChild(formContainer);
 }
 
-// Populate Categories Dynamically
 function populateCategories() {
     const categoryFilter = document.getElementById("categoryFilter");
     const uniqueCategories = [...new Set(quotes.map(quote => quote.category))];
 
-    // Clear previous options
     categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
     uniqueCategories.forEach(category => {
@@ -88,7 +87,6 @@ function populateCategories() {
     });
 }
 
-// Filter Quotes Based on Selected Category
 function filterQuotes() {
     const selectedCategory = document.getElementById("categoryFilter").value;
     const filteredQuotes = selectedCategory === "all" ? quotes : quotes.filter(quote => quote.category === selectedCategory);
@@ -101,18 +99,15 @@ function filterQuotes() {
         quoteDisplay.appendChild(quoteElement);
     });
 
-    // Save the selected filter in localStorage
     localStorage.setItem("selectedCategory", selectedCategory);
 }
 
-// Restore the Last Selected Filter
 function restoreFilter() {
     const lastSelectedCategory = localStorage.getItem("selectedCategory") || "all";
     document.getElementById("categoryFilter").value = lastSelectedCategory;
-    filterQuotes(); // Apply the last filter on page load
+    filterQuotes();
 }
 
-// Export Quotes Function
 function exportToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -125,19 +120,25 @@ function exportToJson() {
     URL.revokeObjectURL(url);
 }
 
-// Import Quotes Function
 function importFromJsonFile(event) {
     const fileReader = new FileReader();
     fileReader.onload = function(event) {
-        const importedQuotes = JSON.parse(event.target.result);
-        quotes.push(...importedQuotes);
-        saveQuotes();
-        populateCategories(); // Re-populate categories after import
-        alert('Quotes imported successfully!');
+        try {
+            const importedQuotes = JSON.parse(event.target.result);
+            if (Array.isArray(importedQuotes)) {
+                quotes.push(...importedQuotes);
+                saveQuotes();
+                populateCategories();
+                alert('Quotes imported successfully!');
+            } else {
+                alert('Invalid file format. Please upload a valid JSON file.');
+            }
+        } catch (error) {
+            alert('Error reading the file. Please ensure it is a valid JSON file.');
+        }
     };
     fileReader.readAsText(event.target.files[0]);
 }
 
-// Attach event listeners to export and import buttons
 document.getElementById("exportButton").onclick = exportToJson;
 document.getElementById("importFile").onchange = importFromJsonFile;
