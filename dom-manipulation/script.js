@@ -65,6 +65,32 @@ async function fetchQuotesFromServer() {
     }
 }
 
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: quote.text,
+                body: quote.category,
+                userId: 1,  // Mock userId to match API expectations
+            }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Successfully posted quote:', result);
+            // Optionally, update the local quotes or show a success message
+        } else {
+            console.error('Error posting quote:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error posting data to server:', error);
+    }
+}
+
 function createAddQuoteForm() {
     const formContainer = document.createElement("div");
     formContainer.style.marginTop = "20px";
@@ -85,7 +111,13 @@ function createAddQuoteForm() {
 
     const addButton = document.createElement("button");
     addButton.textContent = "Add Quote";
-    addButton.onclick = addQuote;
+    addButton.onclick = () => {
+        addQuote();
+        postQuoteToServer({
+            text: document.getElementById("newQuoteText").value,
+            category: document.getElementById("newQuoteCategory").value
+        });
+    };
     addButton.style.marginTop = "10px";
     addButton.style.padding = "8px";
 
