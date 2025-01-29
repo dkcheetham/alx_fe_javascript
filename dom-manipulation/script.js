@@ -22,7 +22,7 @@ function addQuote() {
         quotes.push({ text: newQuoteText, category: newQuoteCategory });
 
         saveQuotes();
-        populateCategories(); 
+        populateCategories();
 
         document.getElementById("newQuoteText").value = "";
         document.getElementById("newQuoteCategory").value = "";
@@ -40,32 +40,29 @@ window.onload = () => {
     createAddQuoteForm();
     populateCategories();
     restoreFilter();
-    fetchQuotesFromServer(); // Added the fetch function to retrieve data from the mock API
 };
 
-// Fetch quotes from the mock API
-function fetchQuotesFromServer() {
-    fetch('https://jsonplaceholder.typicode.com/posts')
-        .then(response => response.json())
-        .then(data => {
-            // Only update the quotes if the fetched data is valid
-            if (Array.isArray(data)) {
-                quotes.length = 0; // Clear the existing quotes
-                data.forEach(post => {
-                    quotes.push({
-                        text: post.title,
-                        category: "General" // Keeping category as General since the API doesn't provide categories
-                    });
-                });
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+        const data = await response.json();
 
-                saveQuotes();  // Save the fetched quotes to localStorage
-                showRandomQuote();  // Show a random quote from the fetched data
-                populateCategories();  // Populate the category filter with updated categories
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-        });
+        if (Array.isArray(data)) {
+            quotes.length = 0; // Clear the existing quotes
+            data.forEach(post => {
+                quotes.push({
+                    text: post.title,
+                    category: "General"
+                });
+            });
+
+            saveQuotes();
+            showRandomQuote();
+            populateCategories();
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
 }
 
 function createAddQuoteForm() {
