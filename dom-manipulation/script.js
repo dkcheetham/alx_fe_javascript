@@ -69,6 +69,7 @@ function createAddQuoteForm() {
     document.body.appendChild(formContainer);
 }
 
+// Export Quotes Function
 function exportToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -92,14 +93,5 @@ function importFromJsonFile(event) {
     fileReader.readAsText(event.target.files[0]);
 }
 
-const exportButton = document.createElement("button");
-exportButton.textContent = "Export Quotes to JSON";
-exportButton.onclick = exportToJson;
-document.body.appendChild(exportButton);
-
-const importInput = document.createElement("input");
-importInput.type = "file";
-importInput.id = "importFile";
-importInput.accept = ".json";
-importInput.onchange = importFromJsonFile;
-document.body.appendChild(importInput);
+document.getElementById("exportButton").onclick = exportToJson;
+document.getElementById("importFile").onchange = importFromJsonFile;
