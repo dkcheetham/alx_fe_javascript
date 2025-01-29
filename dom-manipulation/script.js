@@ -19,10 +19,12 @@ function addQuote() {
     const newQuoteCategory = document.getElementById("newQuoteCategory").value;
 
     if (newQuoteText && newQuoteCategory) {
-        quotes.push({ text: newQuoteText, category: newQuoteCategory });
+        const newQuote = { text: newQuoteText, category: newQuoteCategory };
+        quotes.push(newQuote);
 
         saveQuotes();
         populateCategories();
+        syncQuotes();
 
         document.getElementById("newQuoteText").value = "";
         document.getElementById("newQuoteCategory").value = "";
@@ -40,6 +42,7 @@ window.onload = () => {
     createAddQuoteForm();
     populateCategories();
     restoreFilter();
+    syncQuotes();
 };
 
 async function fetchQuotesFromServer() {
@@ -48,7 +51,7 @@ async function fetchQuotesFromServer() {
         const data = await response.json();
 
         if (Array.isArray(data)) {
-            quotes.length = 0; // Clear the existing quotes
+            quotes.length = 0;
             data.forEach(post => {
                 quotes.push({
                     text: post.title,
@@ -75,20 +78,25 @@ async function postQuoteToServer(quote) {
             body: JSON.stringify({
                 title: quote.text,
                 body: quote.category,
-                userId: 1,  // Mock userId to match API expectations
+                userId: 1,
             }),
         });
 
         if (response.ok) {
             const result = await response.json();
             console.log('Successfully posted quote:', result);
-            // Optionally, update the local quotes or show a success message
         } else {
             console.error('Error posting quote:', response.statusText);
         }
     } catch (error) {
         console.error('Error posting data to server:', error);
     }
+}
+
+// New syncQuotes function
+async function syncQuotes() {
+    await fetchQuotesFromServer();
+    console.log("Quotes synchronized with the server.");
 }
 
 function createAddQuoteForm() {
