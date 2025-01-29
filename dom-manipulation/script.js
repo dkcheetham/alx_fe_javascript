@@ -4,6 +4,62 @@ const quotes = JSON.parse(localStorage.getItem("quotes")) || [
     { text: "Happiness depends upon ourselves.", category: "Happiness" }
 ];
 
+const mockApiUrl = "https://mockapi.io/quotes";
+
+async function fetchQuotesFromServer() {
+    try {
+        const response = await fetch(mockApiUrl);
+        if (response.ok) {
+            const serverQuotes = await response.json();
+            syncQuotes(serverQuotes);
+        } else {
+            console.error("Failed to fetch quotes from the server.");
+        }
+    } catch (error) {
+        console.error("Error fetching data from the server:", error);
+    }
+}
+
+function syncQuotes(serverQuotes) {
+    if (serverQuotes.length !== quotes.length) {
+        alert("Quotes have been updated from the server. Local data will be synced.");
+        quotes.length = 0;
+        quotes.push(...serverQuotes);
+        saveQuotes();
+    } else {
+        alert("No new quotes found on the server.");
+    }
+}
+
+async function postQuoteToServer(quote) {
+    try {
+        const response = await fetch(mockApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(quote),
+        });
+
+        if (response.ok) {
+            const savedQuote = await response.json();
+            quotes.push(savedQuote);
+            saveQuotes();
+            alert('Quote added and saved to the server successfully!');
+        } else {
+            console.error("Failed to post quote to the server.");
+        }
+    } catch (error) {
+        console.error("Error posting quote to the server:", error);
+    }
+}
+
+function syncPeriodically() {
+    setInterval(() => {
+        fetchQuotesFromServer();
+    }, 5 * 60 * 1000);
+}
+
 function saveQuotes() {
     localStorage.setItem("quotes", JSON.stringify(quotes));
 }
@@ -19,10 +75,12 @@ function addQuote() {
     const newQuoteCategory = document.getElementById("newQuoteCategory").value;
 
     if (newQuoteText && newQuoteCategory) {
-        quotes.push({ text: newQuoteText, category: newQuoteCategory });
-
+        const newQuote = { text: newQuoteText, category: newQuoteCategory };
+        quotes.push(newQuote);
         saveQuotes();
-        populateCategories(); 
+        populateCategories();
+
+        postQuoteToServer(newQuote);
 
         document.getElementById("newQuoteText").value = "";
         document.getElementById("newQuoteCategory").value = "";
@@ -31,46 +89,6 @@ function addQuote() {
     } else {
         alert("Please enter both quote text and category.");
     }
-}
-
-document.getElementById("newQuote").addEventListener("click", showRandomQuote);
-
-window.onload = () => {
-    showRandomQuote();
-    createAddQuoteForm();
-    populateCategories();
-    restoreFilter();
-};
-
-function createAddQuoteForm() {
-    const formContainer = document.createElement("div");
-    formContainer.style.marginTop = "20px";
-
-    const quoteInput = document.createElement("input");
-    quoteInput.id = "newQuoteText";
-    quoteInput.type = "text";
-    quoteInput.placeholder = "Enter a new quote";
-    quoteInput.style.marginBottom = "10px";
-    quoteInput.style.padding = "8px";
-
-    const categoryInput = document.createElement("input");
-    categoryInput.id = "newQuoteCategory";
-    categoryInput.type = "text";
-    categoryInput.placeholder = "Enter quote category";
-    categoryInput.style.marginBottom = "10px";
-    categoryInput.style.padding = "8px";
-
-    const addButton = document.createElement("button");
-    addButton.textContent = "Add Quote";
-    addButton.onclick = addQuote;
-    addButton.style.marginTop = "10px";
-    addButton.style.padding = "8px";
-
-    formContainer.appendChild(quoteInput);
-    formContainer.appendChild(categoryInput);
-    formContainer.appendChild(addButton);
-
-    document.body.appendChild(formContainer);
 }
 
 function populateCategories() {
@@ -142,3 +160,42 @@ function importFromJsonFile(event) {
 
 document.getElementById("exportButton").onclick = exportToJson;
 document.getElementById("importFile").onchange = importFromJsonFile;
+
+window.onload = () => {
+    showRandomQuote();
+    createAddQuoteForm();
+    populateCategories();
+    restoreFilter();
+    syncPeriodically();
+};
+
+function createAddQuoteForm() {
+    const formContainer = document.createElement("div");
+    formContainer.style.marginTop = "20px";
+
+    const quoteInput = document.createElement("input");
+    quoteInput.id = "newQuoteText";
+    quoteInput.type = "text";
+    quoteInput.placeholder = "Enter a new quote";
+    quoteInput.style.marginBottom = "10px";
+    quoteInput.style.padding = "8px";
+
+    const categoryInput = document.createElement("input");
+    categoryInput.id = "newQuoteCategory";
+    categoryInput.type = "text";
+    categoryInput.placeholder = "Enter quote category";
+    categoryInput.style.marginBottom = "10px";
+    categoryInput.style.padding = "8px";
+
+    const addButton = document.createElement("button");
+    addButton.textContent = "Add Quote";
+    addButton.onclick = addQuote;
+    addButton.style.marginTop = "10px";
+    addButton.style.padding = "8px";
+
+    formContainer.appendChild(quoteInput);
+    formContainer.appendChild(categoryInput);
+    formContainer.appendChild(addButton);
+
+    document.body.appendChild(formContainer);
+}
