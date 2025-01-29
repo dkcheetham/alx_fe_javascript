@@ -4,8 +4,9 @@ const quotes = JSON.parse(localStorage.getItem("quotes")) || [
     { text: "Happiness depends upon ourselves.", category: "Happiness" }
 ];
 
-const mockApiUrl = "https://mockapi.io/quotes";
+const mockApiUrl = "https://mockapi.io/quotes"; // Example mock API URL for testing
 
+// Fetch quotes from the server
 async function fetchQuotesFromServer() {
     try {
         const response = await fetch(mockApiUrl);
@@ -20,17 +21,20 @@ async function fetchQuotesFromServer() {
     }
 }
 
+// Sync quotes with server data and resolve conflicts
 function syncQuotes(serverQuotes) {
     if (serverQuotes.length !== quotes.length) {
+        // If server data is different, merge it and resolve conflict
         alert("Quotes have been updated from the server. Local data will be synced.");
-        quotes.length = 0;
-        quotes.push(...serverQuotes);
+        quotes.length = 0;  // Clear local quotes
+        quotes.push(...serverQuotes);  // Update local quotes with server data
         saveQuotes();
     } else {
         alert("No new quotes found on the server.");
     }
 }
 
+// Post new quote to the server
 async function postQuoteToServer(quote) {
     try {
         const response = await fetch(mockApiUrl, {
@@ -43,7 +47,7 @@ async function postQuoteToServer(quote) {
 
         if (response.ok) {
             const savedQuote = await response.json();
-            quotes.push(savedQuote);
+            quotes.push(savedQuote);  // Add the quote to local storage after posting
             saveQuotes();
             alert('Quote added and saved to the server successfully!');
         } else {
@@ -54,22 +58,26 @@ async function postQuoteToServer(quote) {
     }
 }
 
+// Sync quotes periodically (e.g., every 5 minutes)
 function syncPeriodically() {
     setInterval(() => {
-        fetchQuotesFromServer();
-    }, 5 * 60 * 1000);
+        fetchQuotesFromServer(); // Sync quotes every 5 minutes
+    }, 5 * 60 * 1000); // 5 minutes
 }
 
+// Update localStorage with quotes data
 function saveQuotes() {
     localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
+// Show random quote
 function showRandomQuote() {
     const quoteDisplay = document.getElementById("quoteDisplay");
     const randomIndex = Math.floor(Math.random() * quotes.length);
     quoteDisplay.innerHTML = `<p>${quotes[randomIndex].text} - <em>${quotes[randomIndex].category}</em></p>`;
 }
 
+// Add new quote
 function addQuote() {
     const newQuoteText = document.getElementById("newQuoteText").value;
     const newQuoteCategory = document.getElementById("newQuoteCategory").value;
@@ -80,6 +88,7 @@ function addQuote() {
         saveQuotes();
         populateCategories();
 
+        // Optionally post to server
         postQuoteToServer(newQuote);
 
         document.getElementById("newQuoteText").value = "";
@@ -91,6 +100,7 @@ function addQuote() {
     }
 }
 
+// Handle category filter
 function populateCategories() {
     const categoryFilter = document.getElementById("categoryFilter");
     const uniqueCategories = [...new Set(quotes.map(quote => quote.category))];
@@ -166,7 +176,7 @@ window.onload = () => {
     createAddQuoteForm();
     populateCategories();
     restoreFilter();
-    syncPeriodically();
+    syncPeriodically(); // Start syncing quotes periodically
 };
 
 function createAddQuoteForm() {
